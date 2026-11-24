@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Вход — InstaClone</title>
+<style>
+    * { box-sizing: border-box; margin: 0; padding: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    body { background-color: #fafafa; display: flex; align-items: center;
+           justify-content: center; min-height: 100vh; padding: 20px; }
+    .card { background: #fff; border: 1px solid #dbdbdb; border-radius: 8px;
+            padding: 40px 32px; width: 100%; max-width: 360px; text-align: center; }
+    .logo { font-size: 32px; font-weight: bold;
+            font-family: 'Brush Script MT', cursive, sans-serif; margin-bottom: 24px; }
+    .field { width: 100%; padding: 10px 12px; margin-bottom: 10px;
+             background: #fafafa; border: 1px solid #dbdbdb; border-radius: 4px;
+             font-size: 14px; outline: none; }
+    .btn { width: 100%; padding: 10px; border: none; border-radius: 8px;
+           background: #0095f6; color: #fff; font-weight: 600; font-size: 14px;
+           cursor: pointer; margin-top: 8px; }
+    .btn:hover { background: #0077c8; }
+    .error { color: #ed4956; font-size: 13px; margin-top: 10px; min-height: 18px; }
+    .switch { font-size: 13px; margin-top: 16px; color: #8e8e8e; }
+    .switch a { color: #0095f6; text-decoration: none; font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="card">
+    <div class="logo">Instagram</div>
+    <input type="text"     id="username" class="field" placeholder="Имя пользователя">
+    <input type="password" id="password" class="field" placeholder="Пароль">
+    <button class="btn" id="loginBtn">Войти</button>
+    <div class="error" id="error"></div>
+    <div class="switch">Нет аккаунта? <a href="register.html">Зарегистрироваться</a></div>
+</div>
+
+<script>
+    document.getElementById('loginBtn').addEventListener('click', () => {
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value;
+        const errorEl  = document.getElementById('error');
+        errorEl.textContent = '';
+
+        const users = JSON.parse(localStorage.getItem('instaclone_users') || '{}');
+        if (!users[username] || users[username].password !== password) {
+            errorEl.textContent = 'Неверное имя пользователя или пароль';
+            return;
+        }
+
+        localStorage.setItem('instaclone_current_user', username);
+        window.location.href = 'index.html';
+    });
+</script>
+</body>
+</html>

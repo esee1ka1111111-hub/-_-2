@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InstaClone</title>
+
+    <script>
+        /* Проверка авторизации до отрисовки */
+        (function () {
+            const current = localStorage.getItem('instaclone_current_user');
+            if (!current) {
+                document.documentElement.style.display = 'none';
+                window.location.replace('register.html');
+            }
+        })();
+    </script>
+
+    <style>
+        /* Базовый сброс и шрифты */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: #fafafa;
+            color: #262626;
+        }
+
+        /* Шапка сайта */
+        header {
+            background-color: #ffffff;
+            border-bottom: 1px solid #dbdbdb;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-container {
+            width: 100%;
+            max-width: 935px;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            font-family: 'Brush Script MT', cursive, sans-serif;
+            letter-spacing: 1px;
+            cursor: pointer;
+        }
+
+        .search-bar {
+            background-color: #efefef;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            width: 250px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .nav-icons {
+            display: flex;
+            gap: 20px;
+            font-size: 22px;
+            cursor: pointer;
+            align-items: center;
+        }
+
+        .user-info {
+            font-size: 13px;
+            font-weight: 600;
+            color: #262626;
+        }
+
+        .logout-btn {
+            font-size: 12px;
+            color: #0095f6;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        /* Основной контейнер ленты */
+        main {
+            max-width: 470px;
+            margin: 24px auto;
+            padding: 0 10px;
+        }
+
+        /* Блок историй (Stories) */
+        .stories {
+            background-color: #ffffff;
+            border: 1px solid #dbdbdb;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+            display: flex;
+            gap: 16px;
+            overflow-x: auto;
+        }
+
+        .story-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+        }
+
+        .story-ring {
+            width: 62px;
+            height: 62px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+            padding: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .story-avatar {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background-color: #ddd;
+            border: 2px solid #ffffff;
+            object-fit: cover;
+        }
+
+        .story-name {
+            font-size: 12px;
+            color: #262626;
+        }
+
+        /* Карточка поста */
+        .post {
+            background-color: #ffffff;
+            border: 1px solid #dbdbdb;
+            border-radius: 8px;
+            margin-bottom: 24px;
+        }
+
+        .post-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+        }
+
+        .post-user {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: #efefef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .post-options {
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* Изображение поста */
+        .post-image {
+            width: 100%;
+            max-height: 585px;
+            object-fit: cover;
+            display: block;
+            background-color: #efefef;
+        }
+
+        /* Панель действий (лайки, комменты) */
+        .post-actions {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 16px 8px;
+            font-size: 22px;
+        }
+
+        .actions-left {
+            display: flex;
+            gap: 16px;
+        }
+
+        .action-btn {
+            cursor: pointer;
+            transition: transform 0.1s;
+            user-select: none;
+        }
+
+        .action-btn:hover {
+            opacity: 0.6;
+        }
+
+        .like-btn.liked {
+            transform: scale(1.15);
+        }
+
+        /* Описание и лайки */
+        .post-info {
+            padding: 0 16px 16px;
+            font-size: 14px;
+        }
+
+        .likes-count {
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .caption {
+            line-height: 1.4;
+        }
+
+        .caption span {
+            font-weight: 600;
+            margin-right: 6px;
+        }
+
+        .post-time {
+            font-size: 10px;
+            color: #8e8e8e;
+            text-transform: uppercase;
+            margin-top: 8px;
+        }
+
+        /* Адаптивность для телефонов */
+        @media (max-width: 600px) {
+            .search-bar {
+                display: none;
+            }
+            main {
+                margin: 0 auto;
+                padding: 0;
+            }
+            .post, .stories {
+                border-left: none;
+                border-right: none;
+                border-radius: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Шапка -->
+    <header>
+        <div class="nav-container">
+            <div class="logo">Instagram</div>
+            <input type="text" class="search-bar" placeholder="Поиск">
+            <div class="nav-icons">
+                <span>🏠</span>
+                <span>💬</span>
+                <span>➕</span>
+                <span>🧭</span>
+                <span>❤️</span>
+                <span class="user-info" id="currentUserLabel"></span>
+                <span class="logout-btn" id="logoutBtn">Выйти</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Лента -->
+    <main>
+        <!-- Истории -->
+        <div class="stories">
+            <div class="story-item">
+                <div class="story-ring">
+                    <img src="photo1.jpg" alt="Story 1" class="story-avatar">
+                </div>
+                <span class="story-name">alex_photo</span>
+            </div>
+            <div class="story-item">
+                <div class="story-ring">
+                    <img src="photo2.jpg" alt="Story 2" class="story-avatar">
+                </div>
+                <span class="story-name">travel_girl</span>
+            </div>
+            <div class="story-item">
+                <div class="story-ring">
+                    <img src="photo3.jpg" alt="Story 3" class="story-avatar">
+                </div>
+                <span class="story-name">design_daily</span>
+            </div>
+        </div>
+
+        <!-- Пост 1 -->
+        <article class="post" data-post-id="post-1">
+            <div class="post-header">
+                <div class="post-user">
+                    <div class="user-avatar">A</div>
+                    <span>News_Nekrasov</span>
+                </div>
+                <div class="post-options">•••</div>
+            </div>
+            <img src="photo1.jpg" alt="Фотография 1" class="post-image">
+            <div class="post-actions">
+                <div class="actions-left">
+                    <span class="action-btn like-btn" data-base-likes="124">🤍</span>
+                    <span class="action-btn">💬</span>
+                    <span class="action-btn">✈️</span>
+                </div>
+                <span class="action-btn">🔖</span>
+            </div>
+            <div class="post-info">
+                <div class="likes-count">Нравится: <span class="likes-num">124</span></div>
+                <div class="caption"><span>News_Nekrasov</span>Отличный кадр для начала дня! #фото #утро</div>
+                <div class="post-time">2 часа назад</div>
+            </div>
+        </article>
+
+        <!-- Пост 2 -->
+        <article class="post" data-post-id="post-2">
+            <div class="post-header">
+                <div class="post-user">
+                    <div class="user-avatar">T</div>
+                    <span>Nekrasov_</span>
+                </div>
+                <div class="post-options">•••</div>
+            </div>
+            <img src="photo2.jpg" alt="Фотография 2" class="post-image">
+            <div class="post-actions">
+                <div class="actions-left">
+                    <span class="action-btn like-btn" data-base-likes="856">🤍</span>
+                    <span class="action-btn">💬</span>
+                    <span class="action-btn">✈️</span>
+                </div>
+                <span class="action-btn">🔖</span>
+            </div>
+            <div class="post-info">
+                <div class="likes-count">Нравится: <span class="likes-num">856</span></div>
+                <div class="caption"><span>Nekrasov_</span>Вдохновение повсюду, стоит только оглянуться 🌍✨</div>
+                <div class="post-time">5 часов назад</div>
+            </div>
+        </article>
+
+        <!-- Пост 3 -->
+        <article class="post" data-post-id="post-3">
+            <div class="post-header">
+                <div class="post-user">
+                    <div class="user-avatar">D</div>
+                    <span>Nikolay_daily</span>
+                </div>
+                <div class="post-options">•••</div>
+            </div>
+            <img src="photo3.jpg" alt="Фотография 3" class="post-image">
+            <div class="post-actions">
+                <div class="actions-left">
+                    <span class="action-btn like-btn" data-base-likes="432">🤍</span>
+                    <span class="action-btn">💬</span>
+                    <span class="action-btn">✈️</span>
+                </div>
+                <span class="action-btn">🔖</span>
+            </div>
+            <div class="post-info">
+                <div class="likes-count">Нравится: <span class="likes-num">432</span></div>
+                <div class="caption"><span>Nikolay_daily</span>Минимализм и эстетика в каждой детали.</div>
+                <div class="post-time">1 день назад</div>
+            </div>
+        </article>
+    </main>
+
+    <script>
+        const currentUser = localStorage.getItem('instaclone_current_user');
+        if (!currentUser) {
+            window.location.replace('register.html');
+        }
+
+        // Имя пользователя и выход
+        document.getElementById('currentUserLabel').textContent = '@' + currentUser;
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            localStorage.removeItem('instaclone_current_user');
+            window.location.href = 'login.html';
+        });
+
+        // Лайки для конкретного пользователя
+        const likesKey = 'instaclone_likes_' + currentUser;
+        const likes = JSON.parse(localStorage.getItem(likesKey) || '{}');
+
+        function saveLikes() {
+            localStorage.setItem(likesKey, JSON.stringify(likes));
+        }
+
+        document.querySelectorAll('.post').forEach(post => {
+            const postId   = post.dataset.postId;
+            const likeBtn  = post.querySelector('.like-btn');
+            const likesNum = post.querySelector('.likes-num');
+            const base     = Number(likeBtn.dataset.baseLikes);
+
+            function render() {
+                const liked = !!likes[postId];
+                likeBtn.textContent = liked ? '❤️' : '🤍';
+                likeBtn.classList.toggle('liked', liked);
+                likesNum.textContent = base + (liked ? 1 : 0);
+            }
+            render();
+
+            likeBtn.addEventListener('click', () => {
+                if (likes[postId]) {
+                    delete likes[postId];
+                } else {
+                    likes[postId] = true;
+                }
+                saveLikes();
+                render();
+            });
+        });
+    </script>
+</body>
+</html>
